@@ -22,10 +22,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.smartattendance.app.ui.screens.attendance.TakeAttendanceScreen
 import com.smartattendance.app.ui.screens.home.HomeScreen
+import com.smartattendance.app.ui.screens.programs.ProgramsScreen
+import com.smartattendance.app.ui.screens.programs.SemestersScreen
+import com.smartattendance.app.ui.screens.programs.SubjectsScreen
 import com.smartattendance.app.ui.screens.setup.ManageCatalogScreen
 import com.smartattendance.app.ui.screens.setup.SetupWizardScreen
 import com.smartattendance.app.ui.theme.BluePrimary
@@ -35,9 +41,17 @@ object Routes {
     const val SETUP = "setup"
     const val MANAGE_CATALOG = "manage_catalog"
     const val PROGRAMS = "programs"
+    const val SEMESTERS = "semesters/{programId}"
+    const val SUBJECTS = "subjects/{semesterId}"
+    const val TAKE_ATTENDANCE = "take_attendance/{subjectId}/{date}/{lectureNumber}"
     const val SHEETS = "sheets"
     const val REPORTS = "reports"
     const val SETTINGS = "settings"
+
+    fun semesters(programId: Long) = "semesters/$programId"
+    fun subjects(semesterId: Long) = "subjects/$semesterId"
+    fun takeAttendance(subjectId: Long, date: String, lectureNumber: Int) =
+        "take_attendance/$subjectId/$date/$lectureNumber"
 }
 
 @Composable
@@ -74,10 +88,53 @@ fun SmartAttendanceNavGraph(
             )
         }
         composable(Routes.PROGRAMS) {
-            PhasePlaceholderScreen(
-                title = "Programs",
-                subtitle = "Scheduled for Phase 3",
-                onBack = { navController.popBackStack() }
+            ProgramsScreen(
+                onBack = { navController.popBackStack() },
+                onProgramSelected = { programId ->
+                    navController.navigate(Routes.semesters(programId))
+                },
+                onGoToSetup = { navController.navigate(Routes.SETUP) }
+            )
+        }
+        composable(
+            route = Routes.SEMESTERS,
+            arguments = listOf(navArgument("programId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val programId = backStackEntry.arguments?.getLong("programId") ?: 0L
+            SemestersScreen(
+                programId = programId,
+                onBack = { navController.popBackStack() },
+                onSemesterSelected = { semesterId ->
+                    navController.navigate(Routes.subjects(semesterId))
+                }
+            )
+        }
+        composable(
+            route = Routes.SUBJECTS,
+            arguments = listOf(navArgument("semesterId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val semesterId = backStackEntry.arguments?.getLong("semesterId") ?: 0L
+            SubjectsScreen(
+                semesterId = semesterId,
+                onBack = { navController.popBackStack() },
+                onStartAttendance = { subjectId, date, lectureNumber ->
+                    navController.navigate(Routes.takeAttendance(subjectId, date, lectureNumber))
+                }
+            )
+        }
+        composable(
+            route = Routes.TAKE_ATTENDANCE,
+            arguments = listOf(
+                navArgument("subjectId") { type = NavType.LongType },
+                navArgument("date") { type = NavType.StringType },
+                navArgument("lectureNumber") { type = NavType.IntType }
+            )
+        ) {
+            TakeAttendanceScreen(
+                onBack = { navController.popBackStack() },
+                onSavedDone = {
+                    navController.popBackStack(Routes.HOME, inclusive = false)
+                }
             )
         }
         composable(Routes.SHEETS) {

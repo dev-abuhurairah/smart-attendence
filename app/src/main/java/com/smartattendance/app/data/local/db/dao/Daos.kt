@@ -18,6 +18,25 @@ import com.smartattendance.app.data.local.db.entity.SubjectEntity
 import com.smartattendance.app.data.local.db.entity.TeacherEntity
 import kotlinx.coroutines.flow.Flow
 
+data class SubjectWithTeacherTuple(
+    val id: Long,
+    val semesterId: Long,
+    val teacherId: Long,
+    val name: String,
+    val code: String?,
+    val teacherName: String
+)
+
+data class SessionHeaderTuple(
+    val programName: String,
+    val semesterNumber: Int,
+    val section: String,
+    val session: String,
+    val subjectName: String,
+    val subjectCode: String?,
+    val teacherName: String
+)
+
 @Dao
 interface HomeSummaryDao {
     @Query("SELECT COUNT(*) FROM programs WHERE is_archived = 0")
@@ -41,6 +60,9 @@ interface ProgramDao {
 
     @Query("SELECT * FROM programs ORDER BY is_archived ASC, name ASC")
     fun observeAllPrograms(): Flow<List<ProgramEntity>>
+
+    @Query("SELECT * FROM programs WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): ProgramEntity?
 
     @Query("SELECT * FROM programs WHERE normalized_name = :normalizedName LIMIT 1")
     suspend fun findByNormalizedName(normalizedName: String): ProgramEntity?
@@ -66,8 +88,14 @@ interface SemesterDao {
     @Query("SELECT * FROM semesters WHERE program_id = :programId AND is_archived = 0 ORDER BY semester_number ASC, section ASC")
     fun observeActiveByProgram(programId: Long): Flow<List<SemesterEntity>>
 
+    @Query("SELECT * FROM semesters WHERE program_id = :programId ORDER BY is_archived ASC, semester_number ASC, section ASC")
+    fun observeAllByProgram(programId: Long): Flow<List<SemesterEntity>>
+
     @Query("SELECT * FROM semesters ORDER BY is_archived ASC, semester_number ASC, section ASC")
     fun observeAllSemesters(): Flow<List<SemesterEntity>>
+
+    @Query("SELECT * FROM semesters WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): SemesterEntity?
 
     @Query(
         """
@@ -118,6 +146,9 @@ interface SemesterDao {
 interface StudentDao {
     @Query("SELECT * FROM students WHERE semester_id = :semesterId AND is_archived = 0")
     fun observeActiveBySemester(semesterId: Long): Flow<List<StudentEntity>>
+
+    @Query("SELECT * FROM students WHERE semester_id = :semesterId AND is_archived = 0")
+    suspend fun getActiveBySemester(semesterId: Long): List<StudentEntity>
 
     @Query("SELECT * FROM students ORDER BY is_archived ASC, semester_id ASC")
     fun observeAllStudents(): Flow<List<StudentEntity>>
@@ -179,6 +210,36 @@ interface SubjectDao {
     @Query("SELECT * FROM subjects WHERE semester_id = :semesterId AND is_archived = 0 ORDER BY name ASC")
     fun observeActiveBySemester(semesterId: Long): Flow<List<SubjectEntity>>
 
+    @Query(
+        """
+        SELECT sub.id, sub.semester_id AS semesterId, sub.teacher_id AS teacherId,
+               sub.name, sub.code, t.name AS teacherName
+        FROM subjects sub
+        INNER JOIN teachers t ON t.id = sub.teacher_id
+        WHERE sub.semester_id = :semesterId AND sub.is_archived = 0
+        ORDER BY sub.name ASC
+        """
+    )
+    fun observeActiveWithTeacher(semesterId: Long): Flow<List<SubjectWithTeacherTuple>>
+
+    @Query(
+        """
+        SELECT p.name AS programName, sem.semester_number AS semesterNumber,
+               sem.section AS section, sem.session AS session,
+               sub.name AS subjectName, sub.code AS subjectCode, t.name AS teacherName
+        FROM subjects sub
+        INNER JOIN semesters sem ON sem.id = sub.semester_id
+        INNER JOIN programs p ON p.id = sem.program_id
+        INNER JOIN teachers t ON t.id = sub.teacher_id
+        WHERE sub.id = :subjectId
+        LIMIT 1
+        """
+    )
+    suspend fun getSessionHeader(subjectId: Long): SessionHeaderTuple?
+
+    @Query("SELECT * FROM subjects WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): SubjectEntity?
+
     @Query("SELECT * FROM subjects ORDER BY is_archived ASC, name ASC")
     fun observeAllSubjects(): Flow<List<SubjectEntity>>
 
@@ -206,8 +267,17 @@ interface AttendanceDao {
     @Query("SELECT * FROM attendance_sessions WHERE subject_id = :subjectId AND date = :date AND lecture_number = :lectureNumber LIMIT 1")
     suspend fun findSession(subjectId: Long, date: String, lectureNumber: Int): AttendanceSessionEntity?
 
+    @Query("SELECT * FROM attendance_records WHERE session_id = :sessionId")
+    suspend fun getRecordsForSession(sessionId: Long): List<AttendanceRecordEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSession(session: AttendanceSessionEntity): Long
+
+    @Update
+    suspend fun updateSession(session: AttendanceSessionEntity)
+
+    @Query("DELETE FROM attendance_records WHERE session_id = :sessionId")
+    suspend fun deleteRecordsForSession(sessionId: Long)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecords(records: List<AttendanceRecordEntity>)
@@ -224,11 +294,23 @@ interface DraftDao {
     @Query("DELETE FROM setup_drafts WHERE id = 1")
     suspend fun clearSetupDraft()
 
+    @Query("SELECT * FROM attendance_drafts WHERE subject_id = :subjectId AND date = :date AND lecture_number = :lectureNumber LIMIT 1")
+    suspend fun findAttendanceDraft(subjectId: Long, date: String, lectureNumber: Int): AttendanceDraftEntity?
+
+    @Query("SELECT * FROM attendance_draft_records WHERE draft_id = :draftId")
+    suspend fun getDraftRecords(draftId: Long): List<AttendanceDraftRecordEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAttendanceDraft(draft: AttendanceDraftEntity): Long
 
+    @Query("DELETE FROM attendance_draft_records WHERE draft_id = :draftId")
+    suspend fun deleteDraftRecords(draftId: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertDraftRecords(records: List<AttendanceDraftRecordEntity>)
+
+    @Query("DELETE FROM attendance_drafts WHERE subject_id = :subjectId AND date = :date AND lecture_number = :lectureNumber")
+    suspend fun deleteAttendanceDraft(subjectId: Long, date: String, lectureNumber: Int)
 }
 
 @Dao
