@@ -39,7 +39,7 @@ import com.smartattendance.app.data.local.db.entity.TeacherEntity
         ExportHistoryEntity::class
     ],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class SmartAttendanceDatabase : RoomDatabase() {
