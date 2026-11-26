@@ -41,6 +41,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -237,7 +238,35 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    if (state.showBackupReminder) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
+                            colors = CardDefaults.cardColors(containerColor = BlueLight),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "Backup Recommended",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = BlueDark,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "No backup made in the last 14 days.",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                TextButton(onClick = onNavigateToSettings) { Text("Backup") }
+                                TextButton(onClick = { viewModel.dismissBackupReminder() }) { Text("Dismiss") }
+                            }
+                        }
+                    }
 
                     Text(
                         text = "Quick Menu",

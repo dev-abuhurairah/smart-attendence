@@ -33,6 +33,8 @@ import com.smartattendance.app.ui.screens.programs.ProgramsScreen
 import com.smartattendance.app.ui.screens.programs.SemestersScreen
 import com.smartattendance.app.ui.screens.programs.SubjectsScreen
 import com.smartattendance.app.ui.screens.reports.ReportsScreen
+import com.smartattendance.app.ui.screens.settings.SettingsScreen
+import com.smartattendance.app.ui.screens.setup.CopySemesterScreen
 import com.smartattendance.app.ui.screens.setup.ManageCatalogScreen
 import com.smartattendance.app.ui.screens.setup.SetupWizardScreen
 import com.smartattendance.app.ui.screens.sheets.AttendanceSheetsScreen
@@ -51,6 +53,7 @@ object Routes {
     const val SHEET_DETAIL = "sheet_detail/{sessionId}"
     const val REPORTS = "reports"
     const val SETTINGS = "settings"
+    const val COPY_SEMESTER = "copy_semester"
 
     fun semesters(programId: Long) = "semesters/$programId"
     fun subjects(semesterId: Long) = "subjects/$semesterId"
@@ -167,9 +170,13 @@ fun SmartAttendanceNavGraph(
             )
         }
         composable(Routes.SETTINGS) {
-            PhasePlaceholderScreen(
-                title = "Settings",
-                subtitle = "Scheduled for Phase 7",
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenCopySemester = { navController.navigate(Routes.COPY_SEMESTER) }
+            )
+        }
+        composable(Routes.COPY_SEMESTER) {
+            CopySemesterScreen(
                 onBack = { navController.popBackStack() }
             )
         }
