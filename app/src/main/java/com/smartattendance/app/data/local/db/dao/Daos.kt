@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.smartattendance.app.data.local.db.entity.AttendanceDraftEntity
 import com.smartattendance.app.data.local.db.entity.AttendanceDraftRecordEntity
 import com.smartattendance.app.data.local.db.entity.AttendanceRecordEntity
@@ -38,11 +39,26 @@ interface ProgramDao {
     @Query("SELECT * FROM programs WHERE is_archived = 0 ORDER BY name ASC")
     fun observeActivePrograms(): Flow<List<ProgramEntity>>
 
+    @Query("SELECT * FROM programs ORDER BY is_archived ASC, name ASC")
+    fun observeAllPrograms(): Flow<List<ProgramEntity>>
+
     @Query("SELECT * FROM programs WHERE normalized_name = :normalizedName LIMIT 1")
     suspend fun findByNormalizedName(normalizedName: String): ProgramEntity?
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(program: ProgramEntity): Long
+
+    @Update
+    suspend fun update(program: ProgramEntity)
+
+    @Query("UPDATE programs SET is_archived = :archived WHERE id = :id")
+    suspend fun setArchived(id: Long, archived: Boolean)
+
+    @Query("SELECT COUNT(*) FROM semesters WHERE program_id = :programId")
+    suspend fun countSemesters(programId: Long): Int
+
+    @Query("DELETE FROM programs WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
 
 @Dao
@@ -50,8 +66,52 @@ interface SemesterDao {
     @Query("SELECT * FROM semesters WHERE program_id = :programId AND is_archived = 0 ORDER BY semester_number ASC, section ASC")
     fun observeActiveByProgram(programId: Long): Flow<List<SemesterEntity>>
 
+    @Query("SELECT * FROM semesters ORDER BY is_archived ASC, semester_number ASC, section ASC")
+    fun observeAllSemesters(): Flow<List<SemesterEntity>>
+
+    @Query(
+        """
+        SELECT * FROM semesters
+        WHERE program_id = :programId
+          AND semester_number = :semesterNumber
+          AND LOWER(TRIM(section)) = LOWER(TRIM(:section))
+          AND LOWER(TRIM(session)) = LOWER(TRIM(:session))
+        LIMIT 1
+        """
+    )
+    suspend fun findDuplicate(
+        programId: Long,
+        semesterNumber: Int,
+        section: String,
+        session: String
+    ): SemesterEntity?
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(semester: SemesterEntity): Long
+
+    @Update
+    suspend fun update(semester: SemesterEntity)
+
+    @Query("UPDATE semesters SET is_archived = :archived WHERE id = :id")
+    suspend fun setArchived(id: Long, archived: Boolean)
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM attendance_sessions ses
+        INNER JOIN subjects sub ON sub.id = ses.subject_id
+        WHERE sub.semester_id = :semesterId
+        """
+    )
+    suspend fun countAttendanceSessions(semesterId: Long): Int
+
+    @Query("DELETE FROM students WHERE semester_id = :semesterId")
+    suspend fun deleteStudentsBySemester(semesterId: Long)
+
+    @Query("DELETE FROM subjects WHERE semester_id = :semesterId")
+    suspend fun deleteSubjectsBySemester(semesterId: Long)
+
+    @Query("DELETE FROM semesters WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
 
 @Dao
@@ -59,8 +119,32 @@ interface StudentDao {
     @Query("SELECT * FROM students WHERE semester_id = :semesterId AND is_archived = 0")
     fun observeActiveBySemester(semesterId: Long): Flow<List<StudentEntity>>
 
+    @Query("SELECT * FROM students ORDER BY is_archived ASC, semester_id ASC")
+    fun observeAllStudents(): Flow<List<StudentEntity>>
+
+    @Query("SELECT * FROM students WHERE semester_id = :semesterId AND normalized_roll = :normalizedRoll LIMIT 1")
+    suspend fun findByNormalizedRoll(semesterId: Long, normalizedRoll: String): StudentEntity?
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(student: StudentEntity): Long
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAll(students: List<StudentEntity>): List<Long>
+
+    @Update
+    suspend fun update(student: StudentEntity)
+
+    @Query("UPDATE students SET is_archived = :archived WHERE id = :id")
+    suspend fun setArchived(id: Long, archived: Boolean)
+
+    @Query("SELECT COUNT(*) FROM attendance_records WHERE student_id = :studentId")
+    suspend fun countAttendanceRecords(studentId: Long): Int
+
+    @Query("DELETE FROM attendance_records WHERE student_id = :studentId")
+    suspend fun deleteAttendanceRecords(studentId: Long)
+
+    @Query("DELETE FROM students WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
 
 @Dao
@@ -68,8 +152,26 @@ interface TeacherDao {
     @Query("SELECT * FROM teachers WHERE is_archived = 0 ORDER BY name ASC")
     fun observeActiveTeachers(): Flow<List<TeacherEntity>>
 
+    @Query("SELECT * FROM teachers ORDER BY is_archived ASC, name ASC")
+    fun observeAllTeachers(): Flow<List<TeacherEntity>>
+
+    @Query("SELECT * FROM teachers WHERE LOWER(TRIM(name)) = LOWER(TRIM(:name)) LIMIT 1")
+    suspend fun findByNameIgnoreCase(name: String): TeacherEntity?
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(teacher: TeacherEntity): Long
+
+    @Update
+    suspend fun update(teacher: TeacherEntity)
+
+    @Query("UPDATE teachers SET is_archived = :archived WHERE id = :id")
+    suspend fun setArchived(id: Long, archived: Boolean)
+
+    @Query("SELECT COUNT(*) FROM subjects WHERE teacher_id = :teacherId")
+    suspend fun countSubjects(teacherId: Long): Int
+
+    @Query("DELETE FROM teachers WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
 
 @Dao
@@ -77,8 +179,26 @@ interface SubjectDao {
     @Query("SELECT * FROM subjects WHERE semester_id = :semesterId AND is_archived = 0 ORDER BY name ASC")
     fun observeActiveBySemester(semesterId: Long): Flow<List<SubjectEntity>>
 
+    @Query("SELECT * FROM subjects ORDER BY is_archived ASC, name ASC")
+    fun observeAllSubjects(): Flow<List<SubjectEntity>>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(subject: SubjectEntity): Long
+
+    @Update
+    suspend fun update(subject: SubjectEntity)
+
+    @Query("UPDATE subjects SET is_archived = :archived WHERE id = :id")
+    suspend fun setArchived(id: Long, archived: Boolean)
+
+    @Query("SELECT COUNT(*) FROM attendance_sessions WHERE subject_id = :subjectId")
+    suspend fun countAttendanceSessions(subjectId: Long): Int
+
+    @Query("DELETE FROM attendance_sessions WHERE subject_id = :subjectId")
+    suspend fun deleteAttendanceSessions(subjectId: Long)
+
+    @Query("DELETE FROM subjects WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
 
 @Dao

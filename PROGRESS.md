@@ -1,18 +1,21 @@
 # Smart Attendance — Build Progress
 
 ## Phase 1: Project Setup, Theme, Navigation, Room DB & CI (Completed)
+- Created Android project at `d:\SmartAttendance` (`com.smartattendance.app`, `minSdk = 26`, `compileSdk = 37`, `targetSdk = 37`).
+- Configured `libs.versions.toml`, Material 3 white & blue theme (`#0B4EA2`, `#073572`, `#EAF2FC`, `#FFFFFF`) + dark-blue dark mode, all 11 Room entities (`exportSchema = true`), `SettingsDataStore`, `HomeScreen`, `NavGraph`, and `.github/workflows/android.yml`.
+
+## Phase 2: Setup Wizard, Excel/CSV Import & Catalog Management (Completed)
 ### What Was Done
-- Created Android project at `d:\SmartAttendance` with `applicationId = "com.smartattendance.app"`, `minSdk = 26`, `compileSdk = 37`, `targetSdk = 37`.
-- Configured Gradle Kotlin DSL and `gradle/libs.versions.toml` with stable versions (AGP `9.5.0`, Gradle `9.6.0`, Kotlin `2.2.10`, KSP `2.3.14`, Compose BOM `2026.11.01`, Room `2.8.5`, Hilt `2.60.1`, Navigation Compose `2.10.2`, DataStore `1.3.0`, Biometric `1.1.0`, FastExcel `0.20.2` + Woodstox `6.5.1`).
-- Built banking-inspired white & blue Material 3 theme (`#0B4EA2`, `#073572`, `#EAF2FC`, `#FFFFFF`) with dark-blue dark mode and status colors (`P` green, `A` red, `L` orange).
-- Designed and wired all 11 Room entities (`programs`, `semesters`, `students`, `teachers`, `subjects`, `attendance_sessions`, `attendance_records`, `attendance_drafts`, `attendance_draft_records`, `setup_drafts`, `export_history`) with foreign keys, indexes, unique constraints, and `exportSchema = true` (`app/schemas/`).
-- Implemented `SettingsDataStore`, `HomeRepository`, `HomeViewModel`, `HomeScreen` (adaptive for phones/tablets/foldables), and `SmartAttendanceNavGraph` with edge-to-edge and predictive back enabled.
-- Added `.github/workflows/android.yml` for automated unit tests, Android Lint, debug APK builds, and tag/manual signed release APK builds.
+- Implemented `NaturalRollComparator` (`2` before `10`, `CS-02` before `CS-10`) and case-insensitive/whitespace-collapsed normalization helpers in `core/NaturalSort.kt`.
+- Implemented `StudentImporter` (`export/StudentImporter.kt`) supporting `.xlsx` (FastExcel + Woodstox StAX) and `.csv` parsing, header auto-detection, row-level error & duplicate highlighting, and downloadable `.xlsx` / `.csv` sample templates via SAF.
+- Expanded `Daos.kt` and built `SetupRepository` with single-transaction `saveSetupWizard()`, program name deduplication, duplicate semester+section+session prevention, roll number uniqueness, and persistent JSON draft saving (`setup_drafts`).
+- Built the 6-step `SetupWizardScreen` & `SetupWizardViewModel` (Program, Students with rapid add & bulk multi-line paste, Import preview, Teachers with quick-pick saved teachers, Subjects, Review & Save).
+- Built `ManageCatalogScreen` & `ManageCatalogViewModel` for editing, archiving/restoring, and deleting programs, semesters, students, teachers, and subjects with history-aware archiving and a 2-step permanent delete warning.
+- Added unit tests `NaturalSortTest` and `StudentImporterTest`.
 
 ### Key Decisions
-- Used isolated `attendance_drafts` and `attendance_draft_records` tables so in-progress attendance never leaks into reports or violates the unique `(subject_id, date, lecture_number)` constraint on `attendance_sessions`.
-- Stored `teacher_name_snapshot` on `attendance_sessions` so future teacher reassignments never rewrite historical attendance records.
-- Used `gradle/actions/setup-gradle@v4` with `gradle-version: "9.6.0"` in GitHub Actions so CI runs reliably even without a pre-generated `gradle-wrapper.jar`.
+- Used Android's built-in `org.json` for `setup_drafts` serialization to avoid adding an extra JSON serialization library/plugin.
+- Configured Woodstox StAX properties inside `StudentImporter` so `fastexcel-reader` runs cleanly on Android without desktop `javax.xml.stream` runtime gaps.
 
 ### Known Limits / Untested Locally
-- Local JDK and Android SDK are not installed on this Windows machine, so `testDebugUnitTest`, `lintDebug`, and `assembleDebug` were not executed locally yet and must be verified via GitHub Actions.
+- Local JDK and Android SDK are not installed on this Windows machine, so Gradle compilation, unit tests (`NaturalSortTest`, `StudentImporterTest`), and lint checks were not executed locally yet (will run in GitHub Actions on push).

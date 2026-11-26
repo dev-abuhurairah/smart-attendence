@@ -26,11 +26,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.smartattendance.app.ui.screens.home.HomeScreen
+import com.smartattendance.app.ui.screens.setup.ManageCatalogScreen
+import com.smartattendance.app.ui.screens.setup.SetupWizardScreen
 import com.smartattendance.app.ui.theme.BluePrimary
 
 object Routes {
     const val HOME = "home"
     const val SETUP = "setup"
+    const val MANAGE_CATALOG = "manage_catalog"
     const val PROGRAMS = "programs"
     const val SHEETS = "sheets"
     const val REPORTS = "reports"
@@ -55,9 +58,18 @@ fun SmartAttendanceNavGraph(
             )
         }
         composable(Routes.SETUP) {
-            PhasePlaceholderScreen(
-                title = "Setup Wizard",
-                subtitle = "Scheduled for Phase 2",
+            SetupWizardScreen(
+                onBack = { navController.popBackStack() },
+                onOpenManageCatalog = { navController.navigate(Routes.MANAGE_CATALOG) },
+                onSetupSavedNavigateToPrograms = {
+                    navController.navigate(Routes.PROGRAMS) {
+                        popUpTo(Routes.HOME)
+                    }
+                }
+            )
+        }
+        composable(Routes.MANAGE_CATALOG) {
+            ManageCatalogScreen(
                 onBack = { navController.popBackStack() }
             )
         }
