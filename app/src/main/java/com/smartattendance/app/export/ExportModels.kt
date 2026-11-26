@@ -67,3 +67,27 @@ data class FullRegisterExportData(
     val columns: List<RegisterLectureColumn>,
     val rows: List<RegisterStudentRow>
 )
+
+data class ReportExportRow(
+    val primaryLabel: String,
+    val secondaryLabel: String,
+    val presentCount: Int,
+    val absentCount: Int,
+    val leaveCount: Int,
+    val percentageLabel: String,
+    val isLowAttendance: Boolean
+)
+
+data class ReportExportData(
+    val instituteName: String,
+    val logoPath: String?,
+    val reportTitle: String,
+    val dateRangeLabel: String,
+    val activeRuleLabel: String,
+    val threshold: Int,
+    val totalPresent: Int,
+    val totalAbsent: Int,
+    val totalLeave: Int,
+    val overallPercentageLabel: String,
+    val rows: List<ReportExportRow>
+)

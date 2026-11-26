@@ -32,6 +32,7 @@ import com.smartattendance.app.ui.screens.home.HomeScreen
 import com.smartattendance.app.ui.screens.programs.ProgramsScreen
 import com.smartattendance.app.ui.screens.programs.SemestersScreen
 import com.smartattendance.app.ui.screens.programs.SubjectsScreen
+import com.smartattendance.app.ui.screens.reports.ReportsScreen
 import com.smartattendance.app.ui.screens.setup.ManageCatalogScreen
 import com.smartattendance.app.ui.screens.setup.SetupWizardScreen
 import com.smartattendance.app.ui.screens.sheets.AttendanceSheetsScreen
@@ -161,9 +162,7 @@ fun SmartAttendanceNavGraph(
             )
         }
         composable(Routes.REPORTS) {
-            PhasePlaceholderScreen(
-                title = "Reports",
-                subtitle = "Scheduled for Phase 6",
+            ReportsScreen(
                 onBack = { navController.popBackStack() }
             )
         }

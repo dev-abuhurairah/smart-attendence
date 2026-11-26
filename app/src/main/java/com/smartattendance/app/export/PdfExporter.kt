@@ -327,4 +327,106 @@ object PdfExporter {
         AttendanceStatus.ABSENT -> Color.parseColor("#C62828")
         AttendanceStatus.LEAVE -> Color.parseColor("#E65100")
     }
+
+    fun exportReport(data: ReportExportData, targetFile: File): File {
+        targetFile.parentFile?.mkdirs()
+        val rowsPerPage = 26
+        val chunks = if (data.rows.isEmpty()) listOf(emptyList()) else data.rows.chunked(rowsPerPage)
+        val totalPages = chunks.size
+
+        val doc = PdfDocument()
+        try {
+            chunks.forEachIndexed { idx, pageRows ->
+                val pageInfo = PdfDocument.PageInfo.Builder(PORTRAIT_W, PORTRAIT_H, idx + 1).create()
+                val page = doc.startPage(pageInfo)
+                drawReportPage(page.canvas, PORTRAIT_W.toFloat(), PORTRAIT_H.toFloat(), data, pageRows, idx + 1, totalPages)
+                doc.finishPage(page)
+            }
+            FileOutputStream(targetFile).use { doc.writeTo(it) }
+        } finally {
+            doc.close()
+        }
+        check(targetFile.exists() && targetFile.length() > 0L) { "Generated report PDF is empty." }
+        return targetFile
+    }
+
+    internal fun drawReportPage(
+        canvas: Canvas,
+        width: Float,
+        height: Float,
+        data: ReportExportData,
+        rows: List<ReportExportRow>,
+        pageNumber: Int,
+        totalPages: Int
+    ) {
+        canvas.drawColor(Color.WHITE)
+        val meta = ExportMetadata(
+            instituteName = data.instituteName,
+            logoPath = data.logoPath,
+            programName = data.reportTitle,
+            semesterLabel = data.activeRuleLabel,
+            section = "",
+            subjectName = "Low < ${data.threshold}%",
+            teacherName = "Overall: P=${data.totalPresent} A=${data.totalAbsent} L=${data.totalLeave} (${data.overallPercentageLabel})",
+            dateRangeLabel = data.dateRangeLabel,
+            leaveRule = com.smartattendance.app.domain.model.LeaveRule.INCLUDE_LEAVE,
+            generatedAtLabel = ""
+        )
+        val startY = drawReportHeader(canvas, width, meta, data.reportTitle)
+
+        val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#0B4EA2") }
+        val headerTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textSize = 9.5f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val cellPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#0E1B2E")
+            textSize = 9.5f
+        }
+        val borderPaint = Paint().apply {
+            color = Color.parseColor("#DCE6F5")
+            strokeWidth = 0.8f
+            style = Paint.Style.STROKE
+        }
+
+        val tableW = width - MARGIN * 2
+        val col1W = 140f
+        val col2W = 180f
+        val numW = (tableW - col1W - col2W) / 4f
+        val rowH = 22f
+        var y = startY
+
+        canvas.drawRect(MARGIN, y, MARGIN + tableW, y + rowH, headerPaint)
+        canvas.drawText("Item", MARGIN + 4f, y + 14f, headerTextPaint)
+        canvas.drawText("Details", MARGIN + col1W + 4f, y + 14f, headerTextPaint)
+        canvas.drawText("P", MARGIN + col1W + col2W + 6f, y + 14f, headerTextPaint)
+        canvas.drawText("A", MARGIN + col1W + col2W + numW + 6f, y + 14f, headerTextPaint)
+        canvas.drawText("L", MARGIN + col1W + col2W + numW * 2 + 6f, y + 14f, headerTextPaint)
+        canvas.drawText("%", MARGIN + col1W + col2W + numW * 3 + 6f, y + 14f, headerTextPaint)
+        y += rowH
+
+        rows.forEachIndexed { rIdx, row ->
+            if (row.isLowAttendance) {
+                val lowBg = Paint().apply { color = Color.parseColor("#FCE8E6") }
+                canvas.drawRect(MARGIN, y, MARGIN + tableW, y + rowH, lowBg)
+            } else if (rIdx % 2 == 1) {
+                val alt = Paint().apply { color = Color.parseColor("#F6F9FE") }
+                canvas.drawRect(MARGIN, y, MARGIN + tableW, y + rowH, alt)
+            }
+            canvas.drawRect(MARGIN, y, MARGIN + tableW, y + rowH, borderPaint)
+            canvas.drawText(row.primaryLabel.take(22), MARGIN + 4f, y + 14f, cellPaint)
+            canvas.drawText(row.secondaryLabel.take(28), MARGIN + col1W + 4f, y + 14f, cellPaint)
+            canvas.drawText(row.presentCount.toString(), MARGIN + col1W + col2W + 6f, y + 14f, cellPaint)
+            canvas.drawText(row.absentCount.toString(), MARGIN + col1W + col2W + numW + 6f, y + 14f, cellPaint)
+            canvas.drawText(row.leaveCount.toString(), MARGIN + col1W + col2W + numW * 2 + 6f, y + 14f, cellPaint)
+            val pctPaint = Paint(cellPaint).apply {
+                color = if (row.isLowAttendance) Color.parseColor("#C62828") else Color.parseColor("#0E1B2E")
+                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            }
+            canvas.drawText(row.percentageLabel, MARGIN + col1W + col2W + numW * 3 + 4f, y + 14f, pctPaint)
+            y += rowH
+        }
+        drawPageFooter(canvas, width, height, pageNumber, totalPages)
+    }
 }

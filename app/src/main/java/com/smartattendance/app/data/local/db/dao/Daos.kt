@@ -65,6 +65,24 @@ data class SheetRecordTuple(
     val status: com.smartattendance.app.domain.model.AttendanceStatus
 )
 
+data class ReportRecordTuple(
+    val sessionId: Long,
+    val date: String,
+    val lectureNumber: Int,
+    val programId: Long,
+    val programName: String,
+    val semesterId: Long,
+    val semesterNumber: Int,
+    val section: String,
+    val sessionName: String,
+    val subjectId: Long,
+    val subjectName: String,
+    val studentId: Long,
+    val rollNumber: String,
+    val studentName: String,
+    val status: com.smartattendance.app.domain.model.AttendanceStatus
+)
+
 @Dao
 interface HomeSummaryDao {
     @Query("SELECT COUNT(*) FROM programs WHERE is_archived = 0")
@@ -408,6 +426,33 @@ interface AttendanceDao {
         """
     )
     suspend fun getAllRecordsForSubject(subjectId: Long): List<AttendanceRecordEntity>
+
+    @Query(
+        """
+        SELECT ses.id AS sessionId,
+               ses.date AS date,
+               ses.lecture_number AS lectureNumber,
+               p.id AS programId,
+               p.name AS programName,
+               sem.id AS semesterId,
+               sem.semester_number AS semesterNumber,
+               sem.section AS section,
+               sem.session AS sessionName,
+               sub.id AS subjectId,
+               sub.name AS subjectName,
+               st.id AS studentId,
+               st.roll_number AS rollNumber,
+               st.name AS studentName,
+               r.status AS status
+        FROM attendance_records r
+        INNER JOIN attendance_sessions ses ON ses.id = r.session_id
+        INNER JOIN subjects sub ON sub.id = ses.subject_id
+        INNER JOIN semesters sem ON sem.id = sub.semester_id
+        INNER JOIN programs p ON p.id = sem.program_id
+        INNER JOIN students st ON st.id = r.student_id
+        """
+    )
+    fun observeAllReportRecords(): Flow<List<ReportRecordTuple>>
 }
 
 @Dao

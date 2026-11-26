@@ -88,4 +88,38 @@ object PngExporter {
         }
         return files
     }
+
+    fun exportReportPages(data: ReportExportData, outputDir: File): List<File> {
+        outputDir.mkdirs()
+        val rowsPerPage = 26
+        val chunks = if (data.rows.isEmpty()) listOf(emptyList()) else data.rows.chunked(rowsPerPage)
+        val totalPages = chunks.size
+        val files = mutableListOf<File>()
+
+        chunks.forEachIndexed { idx, pageRows ->
+            val file = File(outputDir, String.format(Locale.US, "page_%02d.png", idx + 1))
+            val bitmap = Bitmap.createBitmap(PORTRAIT_W, PORTRAIT_H, Bitmap.Config.ARGB_8888)
+            try {
+                val canvas = Canvas(bitmap)
+                canvas.scale(2f, 2f)
+                PdfExporter.drawReportPage(
+                    canvas = canvas,
+                    width = PORTRAIT_W / 2f,
+                    height = PORTRAIT_H / 2f,
+                    data = data,
+                    rows = pageRows,
+                    pageNumber = idx + 1,
+                    totalPages = totalPages
+                )
+                FileOutputStream(file).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+            } finally {
+                bitmap.recycle()
+            }
+            check(file.exists() && file.length() > 0L) { "Generated report PNG page ${idx + 1} is empty." }
+            files.add(file)
+        }
+        return files
+    }
 }

@@ -116,4 +116,47 @@ object ExcelExporter {
             "Generated Excel file is empty or missing."
         }
     }
+
+    fun exportReport(data: ReportExportData, targetFile: File): File {
+        targetFile.parentFile?.mkdirs()
+        FileOutputStream(targetFile).use { out ->
+            Workbook(out, "SmartAttendance", "1.0").use { wb ->
+                val ws = wb.newWorksheet("Report")
+                ws.value(0, 0, AttendanceMath.sanitizeExcelCell(data.instituteName))
+                ws.style(0, 0).bold().fontSize(14).set()
+                ws.value(1, 0, AttendanceMath.sanitizeExcelCell(data.reportTitle))
+                ws.style(1, 0).bold().set()
+                ws.value(2, 0, "${data.dateRangeLabel} • ${data.activeRuleLabel} • Low < ${data.threshold}%")
+                ws.value(3, 0, "Overall: P=${data.totalPresent}, A=${data.totalAbsent}, L=${data.totalLeave}, ${data.overallPercentageLabel}")
+
+                val headerRow = 5
+                listOf("Item", "Details", "Present", "Absent", "Leave", "Percentage", "Status").forEachIndexed { c, h ->
+                    ws.value(headerRow, c, h)
+                    ws.style(headerRow, c).bold().fillColor("0B4EA2").fontColor("FFFFFF").set()
+                }
+
+                data.rows.forEachIndexed { idx, row ->
+                    val r = headerRow + 1 + idx
+                    ws.value(r, 0, AttendanceMath.sanitizeExcelCell(row.primaryLabel))
+                    ws.value(r, 1, AttendanceMath.sanitizeExcelCell(row.secondaryLabel))
+                    ws.value(r, 2, row.presentCount)
+                    ws.value(r, 3, row.absentCount)
+                    ws.value(r, 4, row.leaveCount)
+                    ws.value(r, 5, row.percentageLabel)
+                    ws.value(r, 6, if (row.isLowAttendance) "LOW (<${data.threshold}%)" else "OK")
+                }
+
+                ws.width(0, 22.0)
+                ws.width(1, 28.0)
+                ws.width(2, 11.0)
+                ws.width(3, 11.0)
+                ws.width(4, 11.0)
+                ws.width(5, 13.0)
+                ws.width(6, 15.0)
+                ws.freezePane(1, headerRow + 1)
+            }
+        }
+        verifyNonEmpty(targetFile)
+        return targetFile
+    }
 }
