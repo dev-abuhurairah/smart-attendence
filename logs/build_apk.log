@@ -1,0 +1,190 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders
+> Task :app:mergeReleaseNativeLibs
+> Task :app:checkReleaseDuplicateClasses
+
+> Task :app:stripReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:mergeReleaseArtProfile
+> Task :app:extractReleaseNativeSymbolTables
+> Task :app:generateReleaseBuildConfig
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:processReleaseNavigationResources
+> Task :app:parseReleaseLocalResources
+> Task :app:javaPreCompileRelease
+> Task :app:checkReleaseAarMetadata
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:compileReleaseNavigationResources
+> Task :app:generateReleaseRFile
+> Task :app:mergeReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:extractProguardFiles
+> Task :app:mergeReleaseStartupProfile
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:processReleaseManifestForPackage
+> Task :app:processDebugNavigationResources
+> Task :app:javaPreCompileDebug
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:generateDebugRFile
+> Task :app:processReleaseResources
+> Task :app:generateDebugGlobalSynthetics
+> Task :app:desugarDebugFileDependencies
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:checkDebugDuplicateClasses
+> Task :app:compileDebugNavigationResources
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeDebugNativeLibs
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:mergeExtDexDebug
+> Task :app:kspReleaseKotlin
+> Task :app:kspDebugKotlin
+
+> Task :app:compileReleaseKotlin
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/backup/BackupManager.kt:40:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/backup/BackupManager.kt:177:21 Type argument for reified type parameter 'T' was inferred to the intersection of ['Comparable<*>?' & 'Serializable?']. Reification of an intersection type results in the common supertype being used. This may lead to subtle issues and an explicit type argument is encouraged. This will become an error in a future release.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/backup/BackupManager.kt:183:21 Type argument for reified type parameter 'T' was inferred to the intersection of ['Comparable<*>?' & 'Serializable?']. Reification of an intersection type results in the common supertype being used. This may lead to subtle issues and an explicit type argument is encouraged. This will become an error in a future release.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/data/local/prefs/SettingsDataStore.kt:41:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/data/repository/ExportRepository.kt:58:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/data/repository/ReportsRepository.kt:79:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/applock/AppLockScreen.kt:44:8 'class PasswordVisualTransformation : VisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/applock/AppLockScreen.kt:149:44 'constructor(mask: Char = ...): PasswordVisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/home/HomeScreen.kt:421:50 'val Icons.Outlined.Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Outlined.Chat.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/reports/ReportsScreen.kt:178:13 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: @Composable() ComposableFunction1<@ParameterName(...) List<TabPosition>, Unit> = ..., divider: @Composable() ComposableFunction0<Unit> = ..., tabs: @Composable() ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/settings/SettingsScreen.kt:51:8 'class PasswordVisualTransformation : VisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/settings/SettingsScreen.kt:112:48 'constructor(mask: Char = ...): PasswordVisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/settings/SettingsViewModel.kt:35:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/setup/ManageCatalogScreen.kt:275:13 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: @Composable() ComposableFunction1<@ParameterName(...) List<TabPosition>, Unit> = ..., divider: @Composable() ComposableFunction0<Unit> = ..., tabs: @Composable() ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/backup/BackupManager.kt:40:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/backup/BackupManager.kt:177:21 Type argument for reified type parameter 'T' was inferred to the intersection of ['Comparable<*>?' & 'Serializable?']. Reification of an intersection type results in the common supertype being used. This may lead to subtle issues and an explicit type argument is encouraged. This will become an error in a future release.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/backup/BackupManager.kt:183:21 Type argument for reified type parameter 'T' was inferred to the intersection of ['Comparable<*>?' & 'Serializable?']. Reification of an intersection type results in the common supertype being used. This may lead to subtle issues and an explicit type argument is encouraged. This will become an error in a future release.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/data/local/prefs/SettingsDataStore.kt:41:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/data/repository/ExportRepository.kt:58:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/data/repository/ReportsRepository.kt:79:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/applock/AppLockScreen.kt:44:8 'class PasswordVisualTransformation : VisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/applock/AppLockScreen.kt:149:44 'constructor(mask: Char = ...): PasswordVisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/home/HomeScreen.kt:421:50 'val Icons.Outlined.Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Outlined.Chat.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/reports/ReportsScreen.kt:178:13 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: @Composable() ComposableFunction1<@ParameterName(...) List<TabPosition>, Unit> = ..., divider: @Composable() ComposableFunction0<Unit> = ..., tabs: @Composable() ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/settings/SettingsScreen.kt:51:8 'class PasswordVisualTransformation : VisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/settings/SettingsScreen.kt:112:48 'constructor(mask: Char = ...): PasswordVisualTransformation' is deprecated. The TextField flavors that use VisualTransformation are deprecated. Please refer to BasicSecureTextField and other SecureTextField composables for password inputs.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/settings/SettingsViewModel.kt:35:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/smart-attendence/smart-attendence/app/src/main/java/com/smartattendance/app/ui/screens/setup/ManageCatalogScreen.kt:275:13 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: @Composable() ComposableFunction1<@ParameterName(...) List<TabPosition>, Unit> = ..., divider: @Composable() ComposableFunction0<Unit> = ..., tabs: @Composable() ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:compileReleaseJavaWithJavac
+> Task :app:hiltCollectClassesRelease
+> Task :app:compressReleaseJavaRes
+> Task :app:hiltAggregateDepsRelease
+> Task :app:mergeReleaseJavaResource
+> Task :app:hiltJavaCompileRelease
+> Task :app:transformReleaseClassesWithAsm
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:mergeReleaseGeneratedProguardFiles
+> Task :app:compressDebugJavaRes
+> Task :app:hiltCollectClassesDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:hiltAggregateDepsDebug
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:hiltJavaCompileDebug
+> Task :app:transformDebugClassesWithAsm
+> Task :app:dexBuilderDebug
+> Task :app:mergeProjectDexDebug
+WARNING: R8: The method `javax.xml.stream.Location org.codehaus.stax2.ri.dom.DOMWrappingReader.getErrorLocation()` does not type check and will be assumed to be unreachable.
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:minifyReleaseWithR8
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:convertShrunkResourcesToBinaryRelease
+> Task :app:optimizeReleaseResources
+> Task :app:compileReleaseArtProfile
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/assemble_apks-1795680455703.json
+
+BUILD SUCCESSFUL in 2m 41s
+95 actionable tasks: 95 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.6.0/userguide/configuration_cache_enabling.html
