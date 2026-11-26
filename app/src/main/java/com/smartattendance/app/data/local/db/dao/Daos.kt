@@ -178,6 +178,9 @@ interface StudentDao {
     @Query("SELECT * FROM students WHERE semester_id = :semesterId AND is_archived = 0")
     suspend fun getActiveBySemester(semesterId: Long): List<StudentEntity>
 
+    @Query("SELECT * FROM students WHERE semester_id = :semesterId")
+    suspend fun getAllBySemesterIncludingArchived(semesterId: Long): List<StudentEntity>
+
     @Query("SELECT * FROM students ORDER BY is_archived ASC, semester_id ASC")
     fun observeAllStudents(): Flow<List<StudentEntity>>
 
@@ -387,6 +390,24 @@ interface AttendanceDao {
 
     @Query("DELETE FROM attendance_sessions WHERE id = :sessionId")
     suspend fun deleteSessionById(sessionId: Long)
+
+    @Query(
+        """
+        SELECT * FROM attendance_sessions
+        WHERE subject_id = :subjectId
+        ORDER BY date ASC, lecture_number ASC
+        """
+    )
+    suspend fun getSessionsForSubjectChronological(subjectId: Long): List<AttendanceSessionEntity>
+
+    @Query(
+        """
+        SELECT r.* FROM attendance_records r
+        INNER JOIN attendance_sessions ses ON ses.id = r.session_id
+        WHERE ses.subject_id = :subjectId
+        """
+    )
+    suspend fun getAllRecordsForSubject(subjectId: Long): List<AttendanceRecordEntity>
 }
 
 @Dao
@@ -424,6 +445,19 @@ interface ExportHistoryDao {
     @Query("SELECT * FROM export_history ORDER BY created_at DESC")
     fun observeAll(): Flow<List<ExportHistoryEntity>>
 
+    @Query(
+        """
+        SELECT * FROM export_history
+        WHERE subject_id = :subjectId AND mode = :mode AND format = :format
+        ORDER BY created_at DESC
+        LIMIT 1
+        """
+    )
+    suspend fun findLatestForSubject(subjectId: Long, mode: String, format: String): ExportHistoryEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entry: ExportHistoryEntity): Long
+
+    @Query("DELETE FROM export_history WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }

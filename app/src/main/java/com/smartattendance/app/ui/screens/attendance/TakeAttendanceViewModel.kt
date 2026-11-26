@@ -56,6 +56,7 @@ class TakeAttendanceViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val subjectId: Long = savedStateHandle["subjectId"] ?: 0L
+    val subjectIdValue: Long get() = subjectId
     private val date: String = savedStateHandle["date"] ?: ""
     private val lectureNumber: Int = savedStateHandle["lectureNumber"] ?: 1
 

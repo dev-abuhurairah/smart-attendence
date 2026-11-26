@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartattendance.app.core.DateUtils
 import com.smartattendance.app.domain.model.AttendanceStatus
+import com.smartattendance.app.ui.screens.export.ExportOptionsDialog
 import com.smartattendance.app.ui.theme.BlueLight
 import com.smartattendance.app.ui.theme.BluePrimary
 import com.smartattendance.app.ui.theme.StatusAbsent
@@ -93,14 +94,13 @@ fun SheetDetailScreen(
     }
 
     if (showExportInfo) {
-        AlertDialog(
-            onDismissRequest = { showExportInfo = false },
-            title = { Text("Export & Share") },
-            text = { Text("Excel, PDF, and PNG export & sharing will be available here in Phase 5.") },
-            confirmButton = {
-                Button(onClick = { showExportInfo = false }) { Text("OK") }
-            }
-        )
+        state.summary?.let { s ->
+            ExportOptionsDialog(
+                sessionId = s.sessionId,
+                subjectId = s.subjectId,
+                onDismiss = { showExportInfo = false }
+            )
+        }
     }
 
     Scaffold(

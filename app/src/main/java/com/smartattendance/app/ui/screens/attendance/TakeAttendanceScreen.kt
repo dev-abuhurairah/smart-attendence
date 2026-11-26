@@ -42,6 +42,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +55,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartattendance.app.core.DateUtils
 import com.smartattendance.app.domain.model.AttendanceStatus
+import com.smartattendance.app.ui.screens.export.ExportOptionsDialog
 import com.smartattendance.app.ui.theme.BlueLight
 import com.smartattendance.app.ui.theme.BluePrimary
 import com.smartattendance.app.ui.theme.StatusAbsent
@@ -70,6 +74,7 @@ fun TakeAttendanceScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    var showExportDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.scrollToStudentId) {
         val targetId = state.scrollToStudentId ?: return@LaunchedEffect
@@ -109,21 +114,37 @@ fun TakeAttendanceScreen(
     }
 
     if (state.savedSessionId != null) {
-        AlertDialog(
-            onDismissRequest = onSavedDone,
-            title = { Text("Attendance Saved") },
-            text = {
-                Text("Saved to database! Export options (Excel, PDF, PNG) will be wired here in Phase 5.")
-            },
-            confirmButton = {
-                Button(
-                    onClick = onSavedDone,
-                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
-                ) {
-                    Text("Done")
+        if (showExportDialog) {
+            ExportOptionsDialog(
+                sessionId = state.savedSessionId,
+                subjectId = viewModel.subjectIdValue,
+                onDismiss = {
+                    showExportDialog = false
+                    onSavedDone()
                 }
-            }
-        )
+            )
+        } else {
+            AlertDialog(
+                onDismissRequest = onSavedDone,
+                title = { Text("Attendance Saved") },
+                text = {
+                    Text("Attendance was saved to the database. Would you like to export or share it now?")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showExportDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                    ) {
+                        Text("Export / Share")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = onSavedDone) {
+                        Text("Done")
+                    }
+                }
+            )
+        }
     }
 
     Scaffold(
