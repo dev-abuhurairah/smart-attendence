@@ -37,6 +37,34 @@ data class SessionHeaderTuple(
     val teacherName: String
 )
 
+data class SavedSheetSummaryTuple(
+    val sessionId: Long,
+    val subjectId: Long,
+    val programId: Long,
+    val programName: String,
+    val semesterId: Long,
+    val semesterNumber: Int,
+    val section: String,
+    val sessionName: String,
+    val subjectName: String,
+    val subjectCode: String?,
+    val teacherNameSnapshot: String,
+    val date: String,
+    val lectureNumber: Int,
+    val updatedAt: Long,
+    val presentCount: Int,
+    val absentCount: Int,
+    val leaveCount: Int
+)
+
+data class SheetRecordTuple(
+    val studentId: Long,
+    val rollNumber: String,
+    val studentName: String,
+    val isArchived: Boolean,
+    val status: com.smartattendance.app.domain.model.AttendanceStatus
+)
+
 @Dao
 interface HomeSummaryDao {
     @Query("SELECT COUNT(*) FROM programs WHERE is_archived = 0")
@@ -281,6 +309,84 @@ interface AttendanceDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecords(records: List<AttendanceRecordEntity>)
+
+    @Query(
+        """
+        SELECT ses.id AS sessionId,
+               ses.subject_id AS subjectId,
+               p.id AS programId,
+               p.name AS programName,
+               sem.id AS semesterId,
+               sem.semester_number AS semesterNumber,
+               sem.section AS section,
+               sem.session AS sessionName,
+               sub.name AS subjectName,
+               sub.code AS subjectCode,
+               ses.teacher_name_snapshot AS teacherNameSnapshot,
+               ses.date AS date,
+               ses.lecture_number AS lectureNumber,
+               ses.updated_at AS updatedAt,
+               COALESCE(SUM(CASE WHEN r.status = 'PRESENT' THEN 1 ELSE 0 END), 0) AS presentCount,
+               COALESCE(SUM(CASE WHEN r.status = 'ABSENT' THEN 1 ELSE 0 END), 0) AS absentCount,
+               COALESCE(SUM(CASE WHEN r.status = 'LEAVE' THEN 1 ELSE 0 END), 0) AS leaveCount
+        FROM attendance_sessions ses
+        INNER JOIN subjects sub ON sub.id = ses.subject_id
+        INNER JOIN semesters sem ON sem.id = sub.semester_id
+        INNER JOIN programs p ON p.id = sem.program_id
+        LEFT JOIN attendance_records r ON r.session_id = ses.id
+        GROUP BY ses.id
+        ORDER BY ses.date DESC, ses.lecture_number DESC, ses.updated_at DESC
+        """
+    )
+    fun observeAllSavedSheets(): Flow<List<SavedSheetSummaryTuple>>
+
+    @Query(
+        """
+        SELECT ses.id AS sessionId,
+               ses.subject_id AS subjectId,
+               p.id AS programId,
+               p.name AS programName,
+               sem.id AS semesterId,
+               sem.semester_number AS semesterNumber,
+               sem.section AS section,
+               sem.session AS sessionName,
+               sub.name AS subjectName,
+               sub.code AS subjectCode,
+               ses.teacher_name_snapshot AS teacherNameSnapshot,
+               ses.date AS date,
+               ses.lecture_number AS lectureNumber,
+               ses.updated_at AS updatedAt,
+               COALESCE(SUM(CASE WHEN r.status = 'PRESENT' THEN 1 ELSE 0 END), 0) AS presentCount,
+               COALESCE(SUM(CASE WHEN r.status = 'ABSENT' THEN 1 ELSE 0 END), 0) AS absentCount,
+               COALESCE(SUM(CASE WHEN r.status = 'LEAVE' THEN 1 ELSE 0 END), 0) AS leaveCount
+        FROM attendance_sessions ses
+        INNER JOIN subjects sub ON sub.id = ses.subject_id
+        INNER JOIN semesters sem ON sem.id = sub.semester_id
+        INNER JOIN programs p ON p.id = sem.program_id
+        LEFT JOIN attendance_records r ON r.session_id = ses.id
+        WHERE ses.id = :sessionId
+        GROUP BY ses.id
+        LIMIT 1
+        """
+    )
+    fun observeSheetSummary(sessionId: Long): Flow<SavedSheetSummaryTuple?>
+
+    @Query(
+        """
+        SELECT st.id AS studentId,
+               st.roll_number AS rollNumber,
+               st.name AS studentName,
+               st.is_archived AS isArchived,
+               r.status AS status
+        FROM attendance_records r
+        INNER JOIN students st ON st.id = r.student_id
+        WHERE r.session_id = :sessionId
+        """
+    )
+    fun observeSheetRecords(sessionId: Long): Flow<List<SheetRecordTuple>>
+
+    @Query("DELETE FROM attendance_sessions WHERE id = :sessionId")
+    suspend fun deleteSessionById(sessionId: Long)
 }
 
 @Dao

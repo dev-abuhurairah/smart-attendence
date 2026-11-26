@@ -1,22 +1,20 @@
 # Smart Attendance — Build Progress
 
-## Phase 1: Project Setup, Theme, Navigation, Room DB & CI (Completed)
-- Created Android project at `d:\SmartAttendance` (`com.smartattendance.app`, `minSdk = 26`, `compileSdk = 37`, `targetSdk = 37`), white & blue Material 3 theme, all 11 Room entities, `SettingsDataStore`, `HomeScreen`, and `.github/workflows/android.yml`.
+## Phase 1–3 (Completed)
+- Phase 1: Project setup, Gradle catalog, Material 3 white/blue theme, 11 Room entities (`exportSchema = true`), `HomeScreen`, and GitHub Actions CI.
+- Phase 2: 6-step Setup Wizard with draft persistence, natural roll sorting, Excel/CSV import + sample templates, and `ManageCatalogScreen` with history-aware archive/delete.
+- Phase 3: Programs → Semesters (active/archived) → Subjects → Date/Lecture setup (future dates blocked) → `TakeAttendanceScreen` with live counts, search, Mark All Present, Undo, auto-drafts, jump-to-unmarked validation, and duplicate session editing.
 
-## Phase 2: Setup Wizard, Excel/CSV Import & Catalog Management (Completed)
-- Implemented `NaturalRollComparator`, `StudentImporter` (`.xlsx` + `.csv` + sample templates), `SetupRepository` (single-transaction save, draft persistence, history-aware archive/delete), 6-step `SetupWizardScreen`, `ManageCatalogScreen`, and unit tests.
-
-## Phase 3: Programs Flow & Attendance Marking (Completed)
+## Phase 4: Attendance Sheets List, Filters & Editing (Completed)
 ### What Was Done
-- Added `core/DateUtils.kt` with `YYYY-MM-DD` calendar-date handling and future-date blocking.
-- Expanded `Daos.kt` and built `AttendanceRepository` (`observeActivePrograms`, `observeSemesters` with active/archived toggle, `observeSubjectsWithTeacher`, `loadMarkingContext`, `saveDraft`, and `saveAttendanceSession`).
-- Built `ProgramsScreen`, `SemestersScreen` (active/archived filter), and `SubjectsScreen` (with `SessionSetupDialog` blocking future dates, defaulting lecture to `1`, and detecting existing sessions for edit).
-- Built `TakeAttendanceScreen` & `TakeAttendanceViewModel`: header info, live counts (`Total`, `P`, `A`, `L`, `Left`), search by name/roll, **Mark All Present**, **Undo** stack, auto-saved drafts, unmarked-student highlight + jump-to-first-unmarked on save, summary confirmation dialog, and duplicate-session editing.
-- Wired all Phase 3 routes in `NavGraph.kt` and added `DateUtilsTest`.
+- Expanded `AttendanceDao` with aggregated `observeAllSavedSheets()`, `observeSheetSummary()`, `observeSheetRecords()`, and `deleteSessionById()`.
+- Built `SheetsRepository` with `SheetsFilter` (program, semester, section, subject, teacher, and date range) and natural roll sorting for sheet records.
+- Built `AttendanceSheetsScreen` & `AttendanceSheetsViewModel` displaying saved sheets grouped by date (newest first) with P/A/L badges, last-edited timestamp, and multi-criteria filter dialog.
+- Built `SheetDetailScreen` & `SheetDetailViewModel` for viewing records, launching `TakeAttendanceScreen` to edit, and deleting sheets with confirmation.
+- Wired `Routes.SHEETS` and `Routes.SHEET_DETAIL` in `NavGraph.kt` and added `SheetsFilterTest`.
 
 ### Key Decisions
-- Used `LocalDate` (`YYYY-MM-DD`) strings for session dates so timezone changes never shift an attendance date.
-- Kept `attendance_drafts` auto-saving only for new unsaved sessions; editing an existing saved session updates in-place on confirmation.
+- Aggregated `PRESENT`, `ABSENT`, and `LEAVE` counts directly in SQL (`observeAllSavedSheets`) so the sheets list stays fast even with hundreds of sessions.
 
 ### Known Limits / Untested Locally
-- Local JDK and Android SDK are not installed on this machine, so Gradle build, unit tests, and lint checks were not executed locally yet (will run in GitHub Actions on push).
+- Local JDK and Android SDK are not installed on this machine, so Gradle compilation, unit tests, and lint checks have not been executed locally yet (will run in GitHub Actions on push).

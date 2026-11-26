@@ -34,6 +34,8 @@ import com.smartattendance.app.ui.screens.programs.SemestersScreen
 import com.smartattendance.app.ui.screens.programs.SubjectsScreen
 import com.smartattendance.app.ui.screens.setup.ManageCatalogScreen
 import com.smartattendance.app.ui.screens.setup.SetupWizardScreen
+import com.smartattendance.app.ui.screens.sheets.AttendanceSheetsScreen
+import com.smartattendance.app.ui.screens.sheets.SheetDetailScreen
 import com.smartattendance.app.ui.theme.BluePrimary
 
 object Routes {
@@ -45,6 +47,7 @@ object Routes {
     const val SUBJECTS = "subjects/{semesterId}"
     const val TAKE_ATTENDANCE = "take_attendance/{subjectId}/{date}/{lectureNumber}"
     const val SHEETS = "sheets"
+    const val SHEET_DETAIL = "sheet_detail/{sessionId}"
     const val REPORTS = "reports"
     const val SETTINGS = "settings"
 
@@ -52,6 +55,7 @@ object Routes {
     fun subjects(semesterId: Long) = "subjects/$semesterId"
     fun takeAttendance(subjectId: Long, date: String, lectureNumber: Int) =
         "take_attendance/$subjectId/$date/$lectureNumber"
+    fun sheetDetail(sessionId: Long) = "sheet_detail/$sessionId"
 }
 
 @Composable
@@ -138,10 +142,22 @@ fun SmartAttendanceNavGraph(
             )
         }
         composable(Routes.SHEETS) {
-            PhasePlaceholderScreen(
-                title = "Attendance Sheets",
-                subtitle = "Scheduled for Phase 4",
-                onBack = { navController.popBackStack() }
+            AttendanceSheetsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenSheet = { sessionId ->
+                    navController.navigate(Routes.sheetDetail(sessionId))
+                }
+            )
+        }
+        composable(
+            route = Routes.SHEET_DETAIL,
+            arguments = listOf(navArgument("sessionId") { type = NavType.LongType })
+        ) {
+            SheetDetailScreen(
+                onBack = { navController.popBackStack() },
+                onEditSheet = { subjectId, date, lectureNumber ->
+                    navController.navigate(Routes.takeAttendance(subjectId, date, lectureNumber))
+                }
             )
         }
         composable(Routes.REPORTS) {
