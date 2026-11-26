@@ -10,6 +10,10 @@
 -keep class com.fasterxml.aalto.** { *; }
 -dontwarn com.fasterxml.aalto.**
 -keep class com.fasterxml.woodstox.** { *; }
+-keep class com.ctc.wstx.** { *; }
+-dontwarn com.ctc.wstx.**
+-dontwarn aQute.bnd.**
+-dontwarn aQute.**
 -keep class org.codehaus.stax2.** { *; }
 -dontwarn com.fasterxml.woodstox.**
 -dontwarn org.codehaus.stax2.**
