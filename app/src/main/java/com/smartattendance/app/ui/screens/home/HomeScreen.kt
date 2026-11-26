@@ -1,5 +1,8 @@
 package com.smartattendance.app.ui.screens.home
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,15 +20,17 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAddCheck
 import androidx.compose.material.icons.outlined.Assessment
-import androidx.compose.material.icons.outlined.FactCheck
-import androidx.compose.material.icons.outlined.PlaylistAddCheck
+import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
@@ -44,12 +49,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -277,14 +284,16 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    val menuItems = listOf(
-                        HomeMenuItem("Setup", Icons.Outlined.Tune, onNavigateToSetup),
-                        HomeMenuItem("Programs", Icons.Outlined.School, onNavigateToPrograms),
-                        HomeMenuItem("Attendance Sheets", Icons.Outlined.PlaylistAddCheck, onNavigateToSheets),
-                        HomeMenuItem("Reports", Icons.Outlined.Assessment, onNavigateToReports)
-                    )
+                    val menuItems = remember(onNavigateToSetup, onNavigateToPrograms, onNavigateToSheets, onNavigateToReports) {
+                        listOf(
+                            HomeMenuItem("Setup", Icons.Outlined.Tune, onNavigateToSetup),
+                            HomeMenuItem("Programs", Icons.Outlined.School, onNavigateToPrograms),
+                            HomeMenuItem("Attendance Sheets", Icons.AutoMirrored.Outlined.PlaylistAddCheck, onNavigateToSheets),
+                            HomeMenuItem("Reports", Icons.Outlined.Assessment, onNavigateToReports)
+                        )
+                    }
 
-                    val rows = menuItems.chunked(columns)
+                    val rows = remember(menuItems, columns) { menuItems.chunked(columns) }
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         rows.forEach { rowItems ->
                             Row(
@@ -304,8 +313,121 @@ fun HomeScreen(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Developer Credits Card
+                    DeveloperCreditsCard()
+
                     Spacer(modifier = Modifier.height(24.dp))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeveloperCreditsCard(
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val whatsappNumber = "03467922243"
+    val internationalNumber = "923467922243"
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp)),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = BlueLight,
+                    modifier = Modifier.size(38.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Outlined.Code,
+                            contentDescription = "Developer",
+                            tint = BluePrimary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "Developed by",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Abu Hurairah",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = BluePrimary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Feedbacks are always welcome",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Button(
+                onClick = {
+                    val url = "https://wa.me/$internationalNumber?text=${Uri.encode("Hello Abu Hurairah, I am using your Smart Attendance app! Here is my feedback:")}"
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    try {
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        try {
+                            val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$whatsappNumber"))
+                            context.startActivity(dialIntent)
+                        } catch (_: Exception) {
+                            // Ignored if device lacks dialer/browser
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF25D366),
+                    contentColor = Color.White
+                ),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
+                modifier = Modifier.height(44.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Chat,
+                    contentDescription = "WhatsApp",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "WhatsApp: $whatsappNumber",
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }

@@ -8,6 +8,9 @@ import com.smartattendance.app.data.local.db.entity.StudentEntity
 import com.smartattendance.app.data.repository.AttendanceRepository
 import com.smartattendance.app.domain.model.AttendanceStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,23 +33,44 @@ data class TakeAttendanceUiState(
     val scrollToStudentId: Long? = null,
     val showSummaryDialog: Boolean = false,
     val savedSessionId: Long? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val filteredStudents: List<StudentEntity> = emptyList(),
+    val totalCount: Int = 0,
+    val presentCount: Int = 0,
+    val absentCount: Int = 0,
+    val leaveCount: Int = 0,
+    val unmarkedCount: Int = 0
 ) {
-    val filteredStudents: List<StudentEntity>
-        get() {
-            val q = searchQuery.trim()
-            if (q.isEmpty()) return students
-            return students.filter {
-                it.name.contains(q, ignoreCase = true) ||
-                    it.rollNumber.contains(q, ignoreCase = true)
+    fun withComputedData(): TakeAttendanceUiState {
+        var p = 0
+        var a = 0
+        var l = 0
+        var u = 0
+        for (s in students) {
+            when (marks[s.id]) {
+                AttendanceStatus.PRESENT -> p++
+                AttendanceStatus.ABSENT -> a++
+                AttendanceStatus.LEAVE -> l++
+                null -> u++
             }
         }
-
-    val totalCount: Int get() = students.size
-    val presentCount: Int get() = students.count { marks[it.id] == AttendanceStatus.PRESENT }
-    val absentCount: Int get() = students.count { marks[it.id] == AttendanceStatus.ABSENT }
-    val leaveCount: Int get() = students.count { marks[it.id] == AttendanceStatus.LEAVE }
-    val unmarkedCount: Int get() = students.count { marks[it.id] == null }
+        val q = searchQuery.trim()
+        val filtered = if (q.isEmpty()) {
+            students
+        } else {
+            students.filter {
+                it.name.contains(q, ignoreCase = true) || it.rollNumber.contains(q, ignoreCase = true)
+            }
+        }
+        return this.copy(
+            filteredStudents = filtered,
+            totalCount = students.size,
+            presentCount = p,
+            absentCount = a,
+            leaveCount = l,
+            unmarkedCount = u
+        )
+    }
 }
 
 @HiltViewModel
@@ -61,9 +85,10 @@ class TakeAttendanceViewModel @Inject constructor(
     private val lectureNumber: Int = savedStateHandle["lectureNumber"] ?: 1
 
     private val undoStack = ArrayDeque<Map<Long, AttendanceStatus>>()
+    private var draftJob: Job? = null
 
     private val _uiState = MutableStateFlow(
-        TakeAttendanceUiState(date = date, lectureNumber = lectureNumber)
+        TakeAttendanceUiState(date = date, lectureNumber = lectureNumber).withComputedData()
     )
     val uiState: StateFlow<TakeAttendanceUiState> = _uiState.asStateFlow()
 
@@ -83,7 +108,7 @@ class TakeAttendanceViewModel @Inject constructor(
                             marks = ctx.initialMarks,
                             isEditingExisting = ctx.isEditingExisting,
                             loadedFromDraft = ctx.loadedFromDraft
-                        )
+                        ).withComputedData()
                     }
                 },
                 onFailure = { err ->
@@ -99,7 +124,7 @@ class TakeAttendanceViewModel @Inject constructor(
     }
 
     fun updateSearchQuery(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
+        _uiState.update { it.copy(searchQuery = query).withComputedData() }
     }
 
     fun markStudent(studentId: Long, status: AttendanceStatus) {
@@ -115,7 +140,7 @@ class TakeAttendanceViewModel @Inject constructor(
                 marks = updated,
                 canUndo = undoStack.isNotEmpty(),
                 errorMessage = null
-            )
+            ).withComputedData()
         }
         autoSaveDraft(updated)
     }
@@ -135,7 +160,7 @@ class TakeAttendanceViewModel @Inject constructor(
                 canUndo = undoStack.isNotEmpty(),
                 highlightUnmarked = false,
                 errorMessage = null
-            )
+            ).withComputedData()
         }
         autoSaveDraft(updated)
     }
@@ -147,14 +172,16 @@ class TakeAttendanceViewModel @Inject constructor(
                 marks = previous,
                 canUndo = undoStack.isNotEmpty(),
                 errorMessage = null
-            )
+            ).withComputedData()
         }
         autoSaveDraft(previous)
     }
 
     private fun autoSaveDraft(marks: Map<Long, AttendanceStatus>) {
         if (_uiState.value.isEditingExisting) return
-        viewModelScope.launch {
+        draftJob?.cancel()
+        draftJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(300)
             repo.saveDraft(subjectId, date, lectureNumber, marks)
         }
     }

@@ -382,7 +382,7 @@ private fun AnalyticsTab(
                     }
                 }
             } else {
-                items(summary.rows) { row ->
+                items(summary.rows, key = { "${it.primaryLabel}_${it.secondaryLabel}" }) { row ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         border = if (row.isLowAttendance) BorderStroke(1.2.dp, StatusAbsent) else null

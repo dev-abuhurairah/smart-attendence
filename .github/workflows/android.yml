@@ -42,11 +42,11 @@ jobs:
         with:
           gradle-version: "9.6.0"
 
-      - name: Build Debug APK
-        id: assemble_debug
+      - name: Build Optimized Release and Debug APKs
+        id: assemble_apks
         run: |
           set -o pipefail
-          gradle assembleDebug --stacktrace 2>&1 | tee build_debug.log
+          gradle assembleRelease assembleDebug --stacktrace 2>&1 | tee build_apk.log
 
       - name: Run Unit Tests
         id: unit_tests
@@ -54,12 +54,12 @@ jobs:
           set -o pipefail
           gradle testDebugUnitTest --stacktrace 2>&1 | tee test_debug.log
 
-      - name: Upload Debug APK Artifact
+      - name: Upload APK Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smart-attendance-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: smart-attendance-apks
+          path: app/build/outputs/apk/**/*.apk
           if-no-files-found: ignore
 
       - name: Upload Build Reports and Logs Artifact
@@ -87,31 +87,38 @@ jobs:
           git commit -m "Build logs for ${{ github.sha }} [skip ci]" || true
           git push -f origin build-logs || true
 
-      - name: Publish Debug APK to Git Branch
+      - name: Publish APKs to Git Branch
         if: success()
         run: |
-          if ls app/build/outputs/apk/debug/*.apk 1> /dev/null 2>&1; then
-            git checkout --orphan apk-download 2>/dev/null || git checkout -B apk-download
-            git rm -rf . >/dev/null 2>&1 || true
-            mkdir -p apk
-            cp app/build/outputs/apk/debug/*.apk apk/smart-attendance-debug.apk
-            git add apk/
-            git commit -m "Debug APK for ${{ github.sha }} [skip ci]" || true
-            git push -f origin apk-download || true
-          fi
+          git checkout --orphan apk-download 2>/dev/null || git checkout -B apk-download
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir -p apk
+          cp app/build/outputs/apk/release/*.apk apk/smart-attendance-release.apk 2>/dev/null || true
+          cp app/build/outputs/apk/debug/*.apk apk/smart-attendance-debug.apk 2>/dev/null || true
+          cp apk/smart-attendance-release.apk apk/smart-attendance.apk 2>/dev/null || cp apk/smart-attendance-debug.apk apk/smart-attendance.apk
+          git add apk/
+          git commit -m "Optimized APKs for ${{ github.sha }} [skip ci]" || true
+          git push -f origin apk-download || true
 
       - name: Create or Update GitHub Release with APK
         if: success()
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0-debug
-          name: "Smart Attendance v1.0.0 (Debug Build)"
+          tag_name: v1.0.0-release
+          name: "Smart Attendance v1.0.0 (Smooth & Optimized Release)"
           body: |
             ### Smart Attendance Android App
-            Automated debug APK build from commit `${{ github.sha }}`.
+            **Optimized Release Build** - Powered by R8 optimizations & minification for ultra-smooth 60/120 FPS performance.
+            
+            Developed by **Abu Hurairah** (WhatsApp: `03467922243`).
+            *Feedbacks are always welcome.*
 
-            Download `smart-attendance-debug.apk` below and install on your Android device.
-          files: app/build/outputs/apk/debug/*.apk
+            #### Downloads:
+            - **`smart-attendance-release.apk` (Recommended - Smooth & Fast)**
+            - `smart-attendance-debug.apk` (Debug build)
+          files: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/debug/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
