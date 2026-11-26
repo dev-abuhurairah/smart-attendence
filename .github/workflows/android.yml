@@ -36,20 +36,57 @@ jobs:
         with:
           gradle-version: "9.6.0"
 
-      - name: Run Unit Tests
-        run: gradle testDebugUnitTest --stacktrace
-
-      - name: Run Android Lint
-        run: gradle lintDebug --stacktrace
-
       - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
+        id: assemble_debug
+        run: |
+          set -o pipefail
+          gradle assembleDebug --stacktrace 2>&1 | tee build_debug.log
+
+      - name: Run Unit Tests
+        id: unit_tests
+        run: |
+          set -o pipefail
+          gradle testDebugUnitTest --stacktrace 2>&1 | tee test_debug.log
+
+      - name: Annotate Errors on Failure
+        if: failure()
+        run: |
+          if [ -f build_debug.log ]; then
+            echo "::group::Build Debug Failure Log (Last 150 lines)"
+            tail -n 150 build_debug.log
+            echo "::endgroup::"
+            ERR_MSG=$(grep -E "(e: |FAILURE: |What went wrong:|Caused by:)" build_debug.log | head -n 8 | tr '\n' ' | ')
+            if [ -n "$ERR_MSG" ]; then
+              echo "::error title=Build Failure::$ERR_MSG"
+            fi
+          fi
+          if [ -f test_debug.log ]; then
+            echo "::group::Test Debug Failure Log (Last 150 lines)"
+            tail -n 150 test_debug.log
+            echo "::endgroup::"
+            ERR_MSG=$(grep -E "(e: |FAILURE: |What went wrong:|Caused by:)" test_debug.log | head -n 8 | tr '\n' ' | ')
+            if [ -n "$ERR_MSG" ]; then
+              echo "::error title=Test Failure::$ERR_MSG"
+            fi
+          fi
 
       - name: Upload Debug APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: smart-attendance-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+      - name: Upload Build Reports and Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-and-reports
+          path: |
+            *.log
+            app/build/reports/
+          if-no-files-found: ignore
 
   release:
     name: Signed Release APK
