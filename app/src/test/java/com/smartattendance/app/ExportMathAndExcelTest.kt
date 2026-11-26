@@ -86,7 +86,7 @@ class ExportMathAndExcelTest {
             FileInputStream(tempFile).use { fis ->
                 ReadableWorkbook(fis).use { wb ->
                     val rows = wb.firstSheet.read()
-                    val dataRow = rows[6]
+                    val dataRow = rows.first { it.getCellText(0).contains("CS-01") }
                     assertEquals("'=CS-01", dataRow.getCellText(0))
                     assertEquals("Ayesha", dataRow.getCellText(1))
                     assertEquals("-", dataRow.getCellText(2))
